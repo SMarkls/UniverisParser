@@ -1,0 +1,57 @@
+﻿<Window x:Class="UniverisParser.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UniverisParser"
+        xmlns:viewModel="clr-namespace:UniverisParser.ViewModel"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <viewModel:MarkViewModel x:Key="ViewModel"></viewModel:MarkViewModel>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <TextBox Grid.Row="0" Grid.Column="0" IsReadOnly="True" Text="{Binding Source={StaticResource ViewModel}, Path=MarkText, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"></TextBox>
+        
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock>Введите Логин:</TextBlock>
+            <TextBox Grid.Row="0" Grid.Column="1" Height="50" VerticalAlignment="Top" x:Name="LoginTextBox"/>
+            <TextBlock Grid.Row="1" Grid.Column="0">Введите пароль:</TextBlock>
+            <TextBox Grid.Row="1" Grid.Column="1" Height="50" VerticalAlignment="Top" x:Name="PasswordTextBox"/>
+        </Grid>
+        
+        <Grid Grid.Row="0" Grid.Column="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock>Введите дисциплину:</TextBlock>
+            <TextBox Grid.Row="0" Grid.Column="1" Height="50" VerticalAlignment="Top" x:Name="DisciplineTextBox"/>
+            <TextBlock Grid.Row="1" Grid.Column="0">Введите контр.точку:</TextBlock>
+            <TextBox Grid.Row="1" Grid.Column="1" Height="50" VerticalAlignment="Top" x:Name="ControlPointTextBox"/>
+        </Grid>
+        <Button Grid.Row="1" Grid.Column="0" Click="ParsingBtnClicked">Пропарсить</Button>
+    </Grid>
+</Window>
