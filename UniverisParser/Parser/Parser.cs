@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -6,41 +7,31 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using UniverisParser.Model;
 using UniverisParser.ViewModel;
 
 namespace UniverisParser.Parser;
 
 public class Parser
 {
-    private readonly MarkViewModel viewModel;
+    private readonly DisciplinesViewModel mainViewModel;
     private HttpClient client;
     public string Login { get; set; }
     public string Password { get; set; }
 
-    public Parser(MarkViewModel viewModel)
+    public Parser(DisciplinesViewModel mainViewModel)
     {
-        this.viewModel = viewModel;
+        this.mainViewModel = mainViewModel;
     }
-    
-    public async Task ParseAsync(string discipline, string controlPoint, string semestr, CancellationToken ct)
+    public async Task<JournalViewModel> FindAllControlPointsAsync(string journalId, CancellationToken ct)
     {
         try
-        {   
-            client = InitClient();
-            var verifyToken = await ConfigureVerifyTokenAsync(ct);
-            if (string.IsNullOrEmpty(verifyToken))
-                throw new ArgumentException("Неверный логин или пароль");
-            await ConfigureNavMenuAsync(verifyToken, ct);
-            var journalId = await FindJournalIdAsync(discipline, semestr, ct);
-            if (string.IsNullOrEmpty(journalId))
-                throw new ArgumentException("Неверное название дисциплины");
-            var matches = await FindMarksAsync(controlPoint, journalId, ct);
-            if (matches.Length < 3)
-                throw new ArgumentException("Неверное название контрольной точки.", nameof(controlPoint));
-            var point = matches.Groups[1].Value;
-            var rating = matches.Groups[2].Value;
-            viewModel.Point = point;
-            viewModel.Rating = rating;
+        {
+            await ConfigureAuthTokensAsync(ct);
+            var points = await ParseAllControlPointAsync(journalId, ct);
+            var viewModel = new JournalViewModel();
+            viewModel.Points = points;
+            return viewModel;
         }
         finally
         {
@@ -48,8 +39,23 @@ public class Parser
         }
     }
 
-    private async Task<Match> FindMarksAsync(string controlPoint, string journalId, CancellationToken ct)
+    public async Task FindAllDisciplinesInCurrentSemestrAsync(string semestr, CancellationToken ct)
     {
+        try
+        {
+            await ConfigureAuthTokensAsync(ct);
+            var disciplines = await ParseAllDisciplinesAsync(semestr, ct);
+            mainViewModel.Disciplines = disciplines;
+        }
+        finally
+        {
+            client.Dispose();
+        }
+    }
+
+    private async Task<List<ControlPoint>> ParseAllControlPointAsync(string journalId, CancellationToken ct)
+    {
+        List<ControlPoint> points = new();
         ct.ThrowIfCancellationRequested();
         var journalString = Application.Current.Resources["JournalString"] as string;
         journalString = string.Format(journalString, journalId).Replace("&amp;", "&");
@@ -57,30 +63,51 @@ public class Parser
             new StringContent(
                 journalString,
                 Encoding.UTF8, "application/x-www-form-urlencoded"), ct);
-        var pageText = await response.Content.ReadAsStringAsync(ct);
+        var responseText = await response.Content.ReadAsStringAsync(ct);
         var markPattern =
-            $@"Name"":""{controlPoint.Replace(" ", "[ ]*").Replace("(", @"\(").Replace(")", @"\)")}"",""EventId"":""[\w\d\-]+"",""TypeId"":""[\w\d\-]+""," + 
-            @"""StudentId"":""[\d\w\-]+"",""Fio"":""[\w\d ]+"",""Point"":([\w\d\.]+),""Rating"":([\w\d\.]+),";
-        var matches = Regex.Match(pageText, markPattern);
-        return matches;
-    }
+            @"Name"":""([а-яА-Я\d\-(),. №]+)"",""EventId"":""[\w\d\-]+"",""TypeId"":""[\w\d\-]+"",""StudentId"":""[\d\w\-]+""" +
+            @",""Fio"":""[а-яА-Я\w\d ]+"",""Point"":([\w\d\.]+),""Rating"":([\w\d\.]+)";
+        var matches = Regex.Matches(responseText, markPattern);
+        foreach (Match match in matches)
+        {
+            points.Add(new ControlPoint
+            {
+                Name = match.Groups[1].Value,
+                Mark = match.Groups[2].Value,
+                Rating = match.Groups[3].Value
+            });
+        }
 
-    private async Task<string> FindJournalIdAsync(string discipline, string semestr, CancellationToken ct)
+        return points;
+    }
+    private async Task<List<Discipline>> ParseAllDisciplinesAsync(string semestr, CancellationToken ct)
     {
+        List<Discipline> disciplines = new();
         ct.ThrowIfCancellationRequested();
         var response = await client.GetAsync("https://studlk.susu.ru/ru/StudyPlan/StudyPlanGridPartialCustom", ct);
-        var journalIdPattern =
-            $@",""JournalId"":""([\w\d\-]*)"",""TermNumber"":[\d\w]+,""CycleName"":""[\d\w]+"",""DisciplineName"":""{discipline}""";
-        var pageText = await response.Content.ReadAsStringAsync(ct);
-        var matches = Regex.Matches(pageText, journalIdPattern);
-        var journalId = matches[int.Parse(semestr)].Groups[1].Value;
-        return journalId;
+        var responseText = await response.Content.ReadAsStringAsync(ct);
+        var disciplinesPattern =
+            $@",""JournalId"":""([\w\d\-]*)"",""TermNumber"":{semestr},""CycleName"":""[\d\w]+"",""DisciplineName"":""([а-яА-Я\- ]*)""";
+        ct.ThrowIfCancellationRequested();
+        var matches = Regex.Matches(responseText, disciplinesPattern);
+        foreach (Match match in matches)
+        {
+            if (match.Groups[1].Value == "00000000-0000-0000-0000-000000000000")
+                continue;
+            disciplines.Add(new Discipline
+            { 
+                Name = match.Groups[2].Value,
+                JournalId = match.Groups[1].Value,
+                Semestr = semestr
+            });
+        }
+        return disciplines;
     }
 
     private async Task ConfigureNavMenuAsync(string verifyToken, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        var navMenuString = Application.Current.Resources["NavMenuString"] as string;
+        string navMenuString = Application.Current.Resources["NavMenuString"] as string ?? throw new Exception();
         navMenuString = string.Format(navMenuString, verifyToken, Login, Password);
         var response = await client.PostAsync("https://studlk.susu.ru/ru/Account/Login",
             new StringContent(
@@ -103,7 +130,17 @@ public class Parser
         client.DefaultRequestHeaders.Add("__RequestVerificationToken", verifyToken);
         return verifyToken;
     }
-    
+
+    private async Task ConfigureAuthTokensAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        client = InitClient();
+        var verifyToken = await ConfigureVerifyTokenAsync(ct);
+        if (string.IsNullOrEmpty(verifyToken))
+            throw new ArgumentException("Неверный логин или пароль");
+        ct.ThrowIfCancellationRequested();
+        await ConfigureNavMenuAsync(verifyToken, ct);
+    }
     private HttpClient InitClient()
     {
         var client = new HttpClient();

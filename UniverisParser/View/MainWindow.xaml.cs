@@ -1,24 +1,24 @@
 ﻿using System;
-using System.Security.AccessControl;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using UniverisParser.Model;
 using UniverisParser.ViewModel;
 
 namespace UniverisParser.View;
 
 public partial class MainWindow
 {
-    private readonly CancellationTokenSource cts = new();
+    private  CancellationTokenSource cts = new();
     private CancellationToken ct;
-    private MarkViewModel viewModel;
+    private DisciplinesViewModel viewModel;
     private readonly Parser.Parser parser;
     public MainWindow()
     {
         InitializeComponent();
-        viewModel = (Resources["ViewModel"] as MarkViewModel)!;
+        viewModel = (Resources["ViewModel"] as DisciplinesViewModel)!;
         ct = cts.Token;
         parser = new Parser.Parser(viewModel);
         DataContext = viewModel;
@@ -26,11 +26,19 @@ public partial class MainWindow
 
     private async void ParsingBtnClicked(object sender, RoutedEventArgs e)
     {
+        if (ct.IsCancellationRequested)
+        {
+            cts = new();
+            ct = cts.Token;
+        }
+        
         if (!CheckForEmptyTextBoxes())
         {
             ExceptionBlock.Text = "Заполните все поля.";
             return;
         }
+
+        ExceptionBlock.Text = "";
         var btn = sender as Button;
         btn!.Click -= ParsingBtnClicked;
         CancellBtn.IsEnabled = true;
@@ -38,17 +46,15 @@ public partial class MainWindow
         ExceptionBlock.Text = "";
         parser.Login = LoginTextBox.Text;
         parser.Password = PasswordTextBox.Text;
-        var discipline = DisciplineTextBox.Text;
-        var controlPoint = ControlPointTextBox.Text;
         var semestr = SemestrTextBox.Text;
         try
         {
-            await parser.ParseAsync(discipline, controlPoint, semestr, ct);
+            await parser.FindAllDisciplinesInCurrentSemestrAsync(semestr, ct);
         }
         catch (OperationCanceledException)
         {
             ExceptionBlock.Text = "Парсинг прерван.";
-        }
+        } 
         catch (Exception ex)
         {
             ExceptionBlock.Text = ex.Message;
@@ -73,10 +79,8 @@ public partial class MainWindow
     private bool CheckForEmptyTextBoxes()
     {
         var result = CheckerOfBoxes(SemestrTextBox);
-        result &= CheckerOfBoxes(DisciplineTextBox);
         result &= CheckerOfBoxes(LoginTextBox);
         result &= CheckerOfBoxes(PasswordTextBox);
-        result &= CheckerOfBoxes(ControlPointTextBox);
         return result;
     }
 
@@ -90,5 +94,17 @@ public partial class MainWindow
         }
 
         return true;
+    }
+
+    private async void DisciplineGridDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        var grid = sender as DataGrid;
+        if (grid.Items.Count == 0)
+            return;
+        grid.MouseDoubleClick -= DisciplineGridDoubleClick;
+        var journalId = (grid.SelectedItems[0] as Discipline).JournalId;
+        var journalViewModel = await parser.FindAllControlPointsAsync(journalId, ct);
+        grid.MouseDoubleClick += DisciplineGridDoubleClick;
+        new JournalWindow(journalViewModel).ShowDialog();
     }
 }
