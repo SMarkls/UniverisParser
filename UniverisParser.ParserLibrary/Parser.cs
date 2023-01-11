@@ -1,37 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using UniverisParser.Model;
-using UniverisParser.ViewModel;
+using UniverisParser.ParserLibrary.Model;
 
-namespace UniverisParser.Parser;
+namespace UniverisParser.ParserLibrary;
 
 public class Parser
 {
-    private readonly DisciplinesViewModel mainViewModel;
     private HttpClient client;
     public string Login { get; set; }
     public string Password { get; set; }
 
-    public Parser(DisciplinesViewModel mainViewModel)
+    public Parser()
     {
-        this.mainViewModel = mainViewModel;
+        
     }
-    public async Task<JournalViewModel> FindAllControlPointsAsync(string journalId, CancellationToken ct)
+    public async Task<List<ControlPoint>> FindAllControlPointsAsync(string journalId, CancellationToken ct)
     {
         try
         {
             await ConfigureAuthTokensAsync(ct);
-            var points = await ParseAllControlPointAsync(journalId, ct);
-            var viewModel = new JournalViewModel();
-            viewModel.Points = points;
-            return viewModel;
+            return await ParseAllControlPointAsync(journalId, ct);
         }
         finally
         {
@@ -39,13 +27,12 @@ public class Parser
         }
     }
 
-    public async Task FindAllDisciplinesInCurrentSemestrAsync(string semestr, CancellationToken ct)
+    public async Task<List<Discipline>> FindAllDisciplinesInCurrentSemestrAsync(string semestr, CancellationToken ct)
     {
         try
         {
             await ConfigureAuthTokensAsync(ct);
-            var disciplines = await ParseAllDisciplinesAsync(semestr, ct);
-            mainViewModel.Disciplines = disciplines;
+            return await ParseAllDisciplinesAsync(semestr, ct);
         }
         finally
         {
@@ -57,7 +44,7 @@ public class Parser
     {
         List<ControlPoint> points = new();
         ct.ThrowIfCancellationRequested();
-        var journalString = Application.Current.Resources["JournalString"] as string;
+        var journalString = ParserResources.JournalString;
         journalString = string.Format(journalString, journalId).Replace("&amp;", "&");
         var response = await client.PostAsync("https://studlk.susu.ru/ru/StudyPlan/GetMarks",
             new StringContent(
@@ -107,8 +94,9 @@ public class Parser
     private async Task ConfigureNavMenuAsync(string verifyToken, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        string navMenuString = Application.Current.Resources["NavMenuString"] as string ?? throw new Exception();
+        string navMenuString = ParserResources.NavMenuString;
         navMenuString = string.Format(navMenuString, verifyToken, Login, Password);
+        navMenuString = navMenuString.Replace(@"amp;", "");
         var response = await client.PostAsync("https://studlk.susu.ru/ru/Account/Login",
             new StringContent(
                 navMenuString,

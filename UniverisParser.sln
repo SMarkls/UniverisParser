@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniverisParser", "UniverisParser\UniverisParser.csproj", "{F8F6198A-8F5D-4C04-B1AC-EB3D15ACDA71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniverisParser.Wpf", "UniverisParser.Wpf\UniverisParser.Wpf.csproj", "{F8F6198A-8F5D-4C04-B1AC-EB3D15ACDA71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniverisParser.ParserLibrary", "UniverisParser.ParserLibrary\UniverisParser.ParserLibrary.csproj", "{E67DFB2A-913B-450A-A233-A93D233A1AEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +14,9 @@ Global
 		{F8F6198A-8F5D-4C04-B1AC-EB3D15ACDA71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8F6198A-8F5D-4C04-B1AC-EB3D15ACDA71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8F6198A-8F5D-4C04-B1AC-EB3D15ACDA71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E67DFB2A-913B-450A-A233-A93D233A1AEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E67DFB2A-913B-450A-A233-A93D233A1AEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E67DFB2A-913B-450A-A233-A93D233A1AEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E67DFB2A-913B-450A-A233-A93D233A1AEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

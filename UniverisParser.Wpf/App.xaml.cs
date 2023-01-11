@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace UniverisParser;
+namespace UniverisParser.Wpf;
 
 /// <summary>
 /// Interaction logic for App.xaml

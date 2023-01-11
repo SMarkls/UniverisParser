@@ -1,4 +1,4 @@
-﻿namespace UniverisParser.Model;
+﻿namespace UniverisParser.ParserLibrary.Model;
 
 public class ControlPoint
 {

@@ -15,4 +15,8 @@
       </Page>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\UniverisParser.ParserLibrary\UniverisParser.ParserLibrary.csproj" />
+    </ItemGroup>
+
 </Project>

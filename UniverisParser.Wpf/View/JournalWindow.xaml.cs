@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using UniverisParser.ViewModel;
+using UniverisParser.Wpf.ViewModel;
 
-namespace UniverisParser.View;
+namespace UniverisParser.Wpf.View;
 
 public partial class JournalWindow : Window
 {

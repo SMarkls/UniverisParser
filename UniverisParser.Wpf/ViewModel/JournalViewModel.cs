@@ -1,18 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using UniverisParser.Model;
+using UniverisParser.ParserLibrary.Model;
 
-namespace UniverisParser.ViewModel;
-public class DisciplinesViewModel : INotifyPropertyChanged
+namespace UniverisParser.Wpf.ViewModel;
+
+public class JournalViewModel : INotifyPropertyChanged
 {
-    private List<Discipline> disciplines = new();
-    public List<Discipline> Disciplines
+    private List<ControlPoint> points;
+
+    public List<ControlPoint> Points
     {
-        get => disciplines;
+        get => points;
         set
         {
-            disciplines = value;
+            points = value;
             OnPropertyChanged();
         }
     }

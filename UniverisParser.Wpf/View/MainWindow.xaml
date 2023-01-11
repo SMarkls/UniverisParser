@@ -1,11 +1,14 @@
-﻿<Window x:Class="UniverisParser.View.MainWindow"
+﻿<Window x:Class="UniverisParser.Wpf.View.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-        xmlns:viewModel="clr-namespace:UniverisParser.ViewModel"
+        xmlns:viewModel="clr-namespace:UniverisParser.Wpf.ViewModel"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        KeyDown="FormKeyDown"
+        Closing="MainFormClosing"
+        Loaded="MainFormLoaded">
     <Window.Resources>
         <viewModel:DisciplinesViewModel x:Key="ViewModel"></viewModel:DisciplinesViewModel>
     </Window.Resources>
@@ -27,7 +30,7 @@
             <!-- <TextBox Grid.Row="0" Grid.Column="0" IsReadOnly="True" Text="{Binding Source={StaticResource ViewModel}, Path=MarkText, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"></TextBox> -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Top">
                 <TextBlock>Введите текущий семестр:</TextBlock>
-                <TextBox x:Name="SemestrTextBox" Margin="5, 0" Width="20" Height="15" KeyDown="SemestrTextBox_OnKeyDown"/> 
+                <TextBox PreviewKeyDown="FormKeyDown" TabIndex="2" x:Name="SemestrTextBox" Margin="5, 0" Width="20" Height="15" KeyDown="SemestrTextBox_OnKeyDown"/> 
             </StackPanel>
         </Grid>
         <Grid Grid.Row="0" Grid.Column="1">
@@ -40,9 +43,9 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <TextBlock>Введите Логин:</TextBlock>
-            <TextBox Grid.Row="0" Grid.Column="1" Height="50" VerticalAlignment="Top" x:Name="LoginTextBox"/>
+            <TextBox TabIndex="0" Grid.Row="0" Grid.Column="1" Height="50" VerticalAlignment="Top" x:Name="LoginTextBox"/>
             <TextBlock Grid.Row="1" Grid.Column="0">Введите пароль:</TextBlock>
-            <TextBox Grid.Row="1" Grid.Column="1" Height="50" VerticalAlignment="Top" x:Name="PasswordTextBox"/>
+            <TextBox TabIndex="1" Grid.Row="1" Grid.Column="1" Height="50" VerticalAlignment="Top" x:Name="PasswordTextBox"/>
         </Grid>
         
         <Grid Grid.Row="0" Grid.Column="2">
@@ -60,7 +63,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="0.65*"/>
             </Grid.RowDefinitions>
-            <Button Grid.Row="0" Click="ParsingBtnClicked" x:Name="ParsingBtn" Margin="5">Пропарсить</Button>
+            <Button TabIndex="3" Grid.Row="0" Click="ParsingBtnClicked" x:Name="ParsingBtn" Margin="5">Пропарсить</Button>
             <Button Grid.Row="1" Margin="5" Click="CancellationBtnClicked" x:Name="CancellBtn" IsEnabled="False">Прервать</Button>
         </Grid>
         <TextBlock x:Name="ExceptionBlock" Grid.Row="0" Grid.Column="2" FontSize="15pt" FontWeight="Bold" Foreground="Red" Margin="5"/>
