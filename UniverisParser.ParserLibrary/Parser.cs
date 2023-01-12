@@ -4,16 +4,26 @@ using UniverisParser.ParserLibrary.Model;
 
 namespace UniverisParser.ParserLibrary;
 
-public class Parser
+/// <summary>
+/// Класс парсера.
+/// </summary>
+public sealed class Parser
 {
     private HttpClient client;
+    /// <summary>
+    /// Логин от системы "Универис".
+    /// </summary>
     public string Login { get; set; }
+    /// <summary>
+    /// Пароль от системы "Универис".
+    /// </summary>
     public string Password { get; set; }
-
-    public Parser()
-    {
-        
-    }
+    /// <summary>
+    /// Находит все контрольные точки в дисциплине с данным ID журнала.
+    /// </summary>
+    /// <param name="journalId">ID журнала дисциплины.</param>
+    /// <param name="ct">Токен отмены задачи.</param>
+    /// <returns>Список всех контрольных точек.</returns>
     public async Task<List<ControlPoint>> FindAllControlPointsAsync(string journalId, CancellationToken ct)
     {
         try
@@ -26,7 +36,12 @@ public class Parser
             client.Dispose();
         }
     }
-
+    /// <summary>
+    /// Находит все дисциплины, доступные студенту в данном семестре.
+    /// </summary>
+    /// <param name="semestr">Семестр, в котором нужно найти дисциплины.</param>
+    /// <param name="ct">Токен отмены задачи.</param>
+    /// <returns>Список всех дисциплин.</returns>
     public async Task<List<Discipline>> FindAllDisciplinesInCurrentSemestrAsync(string semestr, CancellationToken ct)
     {
         try
@@ -39,7 +54,12 @@ public class Parser
             client.Dispose();
         }
     }
-
+    /// <summary>
+    /// Отправляет запрос на сервер Универиса и парсит из него список всех контрольных точек.
+    /// </summary>
+    /// <param name="journalId">ID Журнала.</param>
+    /// <param name="ct">Токен отмены задачи.</param>
+    /// <returns>Список контрольных точек.</returns>
     private async Task<List<ControlPoint>> ParseAllControlPointAsync(string journalId, CancellationToken ct)
     {
         List<ControlPoint> points = new();
@@ -52,7 +72,7 @@ public class Parser
                 Encoding.UTF8, "application/x-www-form-urlencoded"), ct);
         var responseText = await response.Content.ReadAsStringAsync(ct);
         var markPattern =
-            @"Name"":""([а-яА-Я\d\-(),. №]+)"",""EventId"":""[\w\d\-]+"",""TypeId"":""[\w\d\-]+"",""StudentId"":""[\d\w\-]+""" +
+            @"Name"":""([а-яА-Я\d\w\-(),. №]+)"",""EventId"":""[\w\d\-]+"",""TypeId"":""[\w\d\-]+"",""StudentId"":""[\d\w\-]+""" +
             @",""Fio"":""[а-яА-Я\w\d ]+"",""Point"":([\w\d\.]+),""Rating"":([\w\d\.]+)";
         var matches = Regex.Matches(responseText, markPattern);
         foreach (Match match in matches)
@@ -67,6 +87,12 @@ public class Parser
 
         return points;
     }
+    /// <summary>
+    /// Отправляет запрос на сервер универиса и парсит из него все дисциплины.
+    /// </summary>
+    /// <param name="semestr">Семестр, в котором нужно найти все дисциплины.</param>
+    /// <param name="ct">Токен отмены задачи.</param>
+    /// <returns>Список всех дисциплин.</returns>
     private async Task<List<Discipline>> ParseAllDisciplinesAsync(string semestr, CancellationToken ct)
     {
         List<Discipline> disciplines = new();
@@ -90,7 +116,12 @@ public class Parser
         }
         return disciplines;
     }
-
+    /// <summary>
+    /// Добавляет в заголовки <see cref="HttpClient"/> заголовок 'nmbMainNavMenuBar', необходимый для работы с системой.
+    /// </summary>
+    /// <param name="verifyToken">Токен верификации.</param>
+    /// <param name="ct">Токен отмены задачи.</param>
+    /// <exception cref="ArgumentException">При неверных данных для входа выбрасывается исключение.</exception>
     private async Task ConfigureNavMenuAsync(string verifyToken, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -107,7 +138,11 @@ public class Parser
         string navMenuCookieValue = Regex.Match(mainNavMenuCookie.Value.First(), navMenuCookiePattern).Groups[1].Value;
         client.DefaultRequestHeaders.Add("nmbMainNavMenuBar", navMenuCookieValue);
     }
-
+    /// <summary>
+    /// Добавляет в заголовки <see cref="HttpClient"/> заголовок 'verifyToken', необходимый для работы с системой.
+    /// </summary>
+    /// <param name="ct">Токен заверщения задачи.</param>
+    /// <returns>Токен верификации</returns>
     private async Task<string> ConfigureVerifyTokenAsync(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -118,7 +153,11 @@ public class Parser
         client.DefaultRequestHeaders.Add("__RequestVerificationToken", verifyToken);
         return verifyToken;
     }
-
+    /// <summary>
+    /// Вызывает методы конфигурации заголовков <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="ct">Токен отмены задачи.</param>
+    /// <exception cref="ArgumentException">При неверных данных авторизации выбрасывает исключение.</exception>
     private async Task ConfigureAuthTokensAsync(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -129,6 +168,10 @@ public class Parser
         ct.ThrowIfCancellationRequested();
         await ConfigureNavMenuAsync(verifyToken, ct);
     }
+    /// <summary>
+    /// Создает объект <see cref="HttpClient"/> для запросов на сервер Универиса.
+    /// </summary>
+    /// <returns>Клиент для запросов на сервер Универиса.</returns>
     private HttpClient InitClient()
     {
         var client = new HttpClient();

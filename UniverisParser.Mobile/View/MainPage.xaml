@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:UniverisParser.Mobile.ViewModel"
+             x:Class="UniverisParser.Mobile.View.MainPage">
+    <ContentPage.Background>
+        <LinearGradientBrush StartPoint="1, 0" EndPoint="0.5, 1">
+            <GradientStop Color="#808080" Offset="0"/>
+            <GradientStop Color="#2F4F4F" Offset="1"/>
+        </LinearGradientBrush>
+    </ContentPage.Background>
+    <ContentPage.Resources>
+        <vm:DisciplineViewModel x:Key="ViewModel"/>
+    </ContentPage.Resources>
+    <ScrollView>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.3*"/>
+                <RowDefinition Height="0.3*"/>
+                <RowDefinition Height="0.3*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackLayout Grid.Row="0" Orientation="Horizontal" Spacing="5">
+                <Label Text="Введите логин:" Margin="0,15"/>
+                <Border Stroke="#FFFFFF" StrokeThickness="4" StrokeShape="RoundRectangle 2,2,2,2" HeightRequest="50">
+                    <Entry x:Name="LoginEntry" VerticalOptions="Start" HorizontalOptions="Start" MinimumWidthRequest="100" BackgroundColor="Gray"/>
+                </Border>
+            </StackLayout>
+            <StackLayout Grid.Row="1" Orientation="Horizontal" Spacing="5">
+                <Label Text="Введите пароль:" Margin="0,15"/>
+                <Border Stroke="#FFFFFF" StrokeThickness="4" StrokeShape="RoundRectangle 2,2,2,2" HeightRequest="50">
+                    <Entry x:Name="PasswordEntry" VerticalOptions="Start" HorizontalOptions="Start" MinimumWidthRequest="100" BackgroundColor="Gray"/>
+                </Border>
+            </StackLayout>
+            <StackLayout Grid.Row="2" Orientation="Horizontal" Spacing="5">
+                <Label Text="Введите текущий семестр:" Margin="0,15"/>
+                <Border Stroke="#FFFFFF" StrokeThickness="4" StrokeShape="RoundRectangle 2,2,2,2" HeightRequest="50">
+                    <Entry x:Name="SemestrEntry" VerticalOptions="Start" HorizontalOptions="Start" MaximumWidthRequest="30" BackgroundColor="Gray"/>
+                </Border>
+            </StackLayout>
+            <StackLayout Grid.Row="3" Orientation="Vertical" Spacing="5" Margin="15, 0">
+                <Button x:Name="ParsingBtn" Clicked="ParsingBtnClicked" Text="Пропарсить"/>
+                <Button x:Name="CancelBtn" Clicked="CancellationBtnClicked" Text="Прервать" IsEnabled="False"/>
+            </StackLayout>
+            <ScrollView Grid.Row="4" Grid.RowSpan="2" BindingContext="{StaticResource ViewModel}">
+                <ListView ItemsSource="{Binding Disciplines}" ItemSelected="DisciplineSelected">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextCell Text="{Binding Path=Name}" Detail="{Binding Semestr, StringFormat=Семестр: \{0\}}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollView>
+        </Grid>
+    </ScrollView>
+</ContentPage>

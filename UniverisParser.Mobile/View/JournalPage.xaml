@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:UniverisParser.Mobile.ViewModel"
+             x:Class="UniverisParser.Mobile.View.JournalPage">
+    <ContentPage.Background>
+        <LinearGradientBrush StartPoint="1, 0" EndPoint="0.5, 1">
+            <GradientStop Color="#808080" Offset="0"/>
+            <GradientStop Color="#2F4F4F" Offset="1"/>
+        </LinearGradientBrush>
+    </ContentPage.Background>
+    <ContentPage.Resources>
+        <vm:JournalViewModel x:Key="ViewModel"/>
+    </ContentPage.Resources>
+
+    <ScrollView x:Name="ScrollView" BindingContext="{StaticResource ViewModel}">
+        <StackLayout>
+            <ListView ItemsSource="{Binding Points}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="0.2*"/>
+                                    <ColumnDefinition Width="0.2*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Text="{Binding Path=Name}"/>
+                                <Label Grid.Column="1" Text="{Binding Path=Mark}"/>
+                                <Label Grid.Column="2" Text="{Binding Path=Rating}"/>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Button Text="Вернуться" Clicked="BackBtnClicked"/>
+        </StackLayout>
+    </ScrollView>
+
+</ContentPage>
